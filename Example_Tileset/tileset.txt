@@ -1,0 +1,5 @@
+#Ultimate Cataclysm
+#Name of the tileset
+NAME: ultica
+#Viewing (Option) name of the tileset
+VIEW: UltiCa
