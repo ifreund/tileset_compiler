@@ -1,0 +1,6 @@
+{
+    "id" : "multitile_test",
+    "fg" : "single_tile.png",
+    "autotile" : "true",
+    "autotile_fg" : "cata_multitile_template.png"
+}
