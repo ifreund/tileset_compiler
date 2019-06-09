@@ -1,0 +1,10 @@
+[
+    {
+        "id": "f_chair",
+        "fg": "f_chair.png"
+    },
+    {
+        "id": "f_fridge",
+        "fg": "f_fridge.png"
+    }
+]

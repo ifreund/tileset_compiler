@@ -18,7 +18,7 @@ def autotile_to_array(img, tile_width, tile_height):
         return out
     for row in range(0, img.height, tile_height):
         for column in range(0, img.width, tile_width):
-            out.append(img.crop((row, column, row + tile_width, column + tile_height)))
+            out.append(img.crop((column, row, column + tile_width, row + tile_height)))
     return out
 
 
@@ -38,51 +38,47 @@ class Tile_Def:
     multitile = False
     rotates = False
 
-    def __init__(self, path):
-        contents = os.listdir(path)
-        json_or_none = next((f for f in contents if f.endswith(".json")), None)
-        if not json_or_none:
-            print("Error: missing json file in {0}".format(path))
-            os.exit(1)
+    # filename must be a json file in root
+    def __init__(self, root, filename, tile_def_in):
+        filepath = os.path.join(root, filename)
+
+        if "id" not in tile_def_in:
+            print("Error reading {0}: missing \"id\" field".format(filepath))
+            os.abort()
+        if "fg" not in tile_def_in and "bg" not in tile_def_in:
+            print("Error reading {0}: need at least one of \"fg\" or \"bg\"".format(filepath))
+            os.abort()
+
+        if isinstance(tile_def_in["id"], list):
+            self.id = tile_def_in["id"]
         else:
-            with open(os.path.join(path, json_or_none), "r") as fp:
-                tile_def_in = json.load(fp)
+            self.id = [tile_def_in["id"]]
 
-                if "id" not in tile_def_in:
-                    print("Error reading {0}: missing id".format(os.path.join(path, json_or_none)))
-                    os.exit(1)
-                if "fg" not in tile_def_in and "bg" not in tile_def_in:
-                    print("Error reading {0}: need at least one of fg or bg".format(os.path.join(path, json_or_none)))
-                    os.exit(1)
+        if "fg" in tile_def_in:
+            if isinstance(tile_def_in["fg"], list):
+                self.fg = map(Image.open, os.path.join(root, tile_def_in["fg"]))
+            else:
+                self.fg = [Image.open(os.path.join(root, tile_def_in["fg"]))]
 
-                if isinstance(tile_def_in["id"], list):
-                    self.id = tile_def_in["id"]
-                else:
-                    self.id = [tile_def_in["id"]]
+        if "bg" in tile_def_in:
+            if isinstance(tile_def_in["bg"], list):
+                self.bg = map(Image.open, os.path.join(root, tile_def_in["bg"]))
+            else:
+                self.bg = [Image.open(os.path.join(root, tile_def_in["bg"]))]
 
-                if "fg" in tile_def_in:
-                    if isinstance(tile_def_in["fg"], list):
-                        self.fg = map(Image.open, os.path.join(path, tile_def_in["fg"]))
-                    else:
-                        self.fg = [Image.open(os.path.join(path, tile_def_in["fg"]))]
-
-                if "bg" in tile_def_in:
-                    if isinstance(tile_def_in["bg"], list):
-                        self.bg = map(Image.open, os.path.join(path, tile_def_in["bg"]))
-                    else:
-                        self.bg = [Image.open(os.path.join(path, tile_def_in["bg"]))]
-
-                if "autotile" in tile_def_in and tile_def_in["autotile"]:
-                    if "autotile_fg" not in tile_def_in and "autotile_bg" not in tile_def_in:
-                        print("Error reading {0}: need at least one of autotile_fg or autotile_bg".format(
-                            os.path.join(path, json_or_none)))
-                        os.exit(1)
-                    self.multitile = True
-                    self.rotates = True
-                    if "autotile_fg" in tile_def_in:
-                        self.autotile_fg = Image.open(os.path.join(path, tile_def_in["autotile_fg"]))
-                    if "autotile_bg" in tile_def_in:
-                        self.autotile_bg = Image.open(os.path.join(path, tile_def_in["autotile_bg"]))
+        if "autotile" in tile_def_in and tile_def_in["autotile"]:
+            if "autotile_fg" not in tile_def_in and "autotile_bg" not in tile_def_in:
+                print("Error reading {0}: need at least one of autotile_fg or autotile_bg".format(filepath))
+                os.abort()
+            self.multitile = True
+            self.rotates = True
+            if "autotile_fg" in tile_def_in:
+                self.autotile_fg = Image.open(os.path.join(root, tile_def_in["autotile_fg"]))
+            if "autotile_bg" in tile_def_in:
+                self.autotile_bg = Image.open(os.path.join(root, tile_def_in["autotile_bg"]))
+        else:
+            if "rotates" in tile_def_in:
+                self.rotates = tile_def_in["rotates"]
 
 
 def main():
@@ -92,8 +88,8 @@ def main():
     for root, dirs, files in os.walk(args.path):
 
         if "tileset.txt" not in files:
-            print("Couldn't find tileset.txt")
-            os.exit(1)
+            print("Error: missing \"tileset.txt\" in {0}".format(root))
+            os.abort()
         else:
             with open(os.path.join(root, "tileset.txt"), "r") as fp:
                 lines = fp.readlines()
@@ -101,7 +97,7 @@ def main():
                 name_line_or_none = next((line for line in lines if line.startswith("NAME: ")), None).strip()
                 if not name_line_or_none:
                     print("Error reading tileset.txt: Missing 'NAME:' statement")
-                    os.exit(1)
+                    os.abort()
                 else:
                     out_dir = os.path.join(out_dir, name_line_or_none.split(" ")[1])
                     os.makedirs(out_dir, exist_ok=True)
@@ -109,7 +105,7 @@ def main():
                 view_line_or_none = next((line for line in lines if line.startswith("VIEW: ")), None).strip()
                 if not view_line_or_none:
                     print("Error reading tileset.txt: Missing 'VIEW:' statement")
-                    os.exit(1)
+                    os.abort()
 
                 with open(os.path.join(out_dir, "tileset.txt"), "w") as tileset_txt:
                     tileset_txt.write("#Name of tileset\n")
@@ -127,8 +123,8 @@ def main():
         tile_height = 0
         tile_width = 0
         if "tile_info.json" not in files:
-            print("Couldn't find tile_info.json")
-            os.exit(1)
+            print("Error: missing \"tile_info.json\" in {0}".format(root))
+            os.abort()
         else:
             with open(os.path.join(root, "tile_info.json"), "r") as fp:
                 tile_info = json.load(fp)
@@ -147,32 +143,53 @@ def main():
         out["tiles-new"] = []
         tile_index = 0
         for directory in dirs:
-            print("Processing {0}".format(os.path.join(root, directory)))
             current_file = {"file": directory + ".png"}
-            tile_defs = []
             sprite_width = tile_width
             sprite_height = tile_height
+
+            dir_info_json = os.path.join(root, directory, directory + ".json")
+            if not os.path.isfile(dir_info_json):
+                print("Error: missing \"{0}\" file in {1}".format(dir_info_json, directory))
+                os.abort()
+
+            with open(dir_info_json, "r") as fp:
+                tile_info = json.load(fp)
+
+                if "file" in tile_info and tile_info["file"].endswith(".png"):
+                    current_file["file"] = tile_info["file"]
+                if "sprite_width" in tile_info:
+                    sprite_width = tile_info["sprite_width"]
+                    current_file["sprite_width"] = sprite_width
+                if "sprite_height" in tile_info:
+                    sprite_height = tile_info["sprite_height"]
+                    current_file["sprite_height"] = sprite_height
+                if "sprite_offset_x" in tile_info:
+                    current_file["sprite_offset_x"] = tile_info["sprite_offset_x"]
+                if "sprite_offset_y" in tile_info:
+                    current_file["sprite_offset_y"] = tile_info["sprite_offset_y"]
+
+            tile_defs = []
+            print("Processing {0}".format(os.path.join(root, directory)))
+
+            # Load EVERY json file in directory, regardless of folder structure
             for root2, dirs2, files2 in os.walk(os.path.join(root, directory)):
-                if directory + ".json" in files2:
-                    with open(os.path.join(root2, directory + ".json"), "r") as fp:
-                        tile_info = json.load(fp)
+                for filename in files2:
+                    cur_filepath = os.path.join(root2, filename)
 
-                        if "file" in tile_info and tile_info["file"].endswith(".png"):
-                            current_file["file"] = tile_info["file"]
-                        if "sprite_width" in tile_info:
-                            sprite_width = tile_info["sprite_width"]
-                            current_file["sprite_width"] = sprite_width
-                        if "sprite_height" in tile_info:
-                            sprite_height = tile_info["sprite_height"]
-                            current_file["sprite_height"] = sprite_height
-                        if "sprite_offset_x" in tile_info:
-                            current_file["sprite_offset_x"] = tile_info["sprite_offset_x"]
-                        if "sprite_offset_y" in tile_info:
-                            current_file["sprite_offset_y"] = tile_info["sprite_offset_y"]
-                for subdirectory in dirs2:
-                    tile_defs.append(Tile_Def(os.path.join(root2, subdirectory)))
+                    # This file is special and doesn't contain a tile definition
+                    if cur_filepath == dir_info_json:
+                        continue
 
-                break  # os.walk
+                    # Handles hidden files properly (won't open a file called ".json")
+                    if os.path.splitext(cur_filepath)[-1].lower() == ".json":
+                        with open(cur_filepath, "r") as fp:
+                            tile_def_json = json.load(fp)
+                            if isinstance(tile_def_json, list):
+                                for tile_def in tile_def_json:
+                                    tile_defs.append(Tile_Def(root2, filename, tile_def))
+                            else:
+                                tile_defs.append(Tile_Def(root2, filename, tile_def_json))
+
             tiles = []
             sprites = []
             for tile_def in tile_defs:
