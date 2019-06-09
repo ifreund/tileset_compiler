@@ -54,31 +54,29 @@ class Tile_Def:
         else:
             self.id = [tile_def_in["id"]]
 
-        if "fg" in tile_def_in:
-            if isinstance(tile_def_in["fg"], list):
-                self.fg = map(Image.open, os.path.join(root, tile_def_in["fg"]))
-            else:
-                self.fg = [Image.open(os.path.join(root, tile_def_in["fg"]))]
-
-        if "bg" in tile_def_in:
-            if isinstance(tile_def_in["bg"], list):
-                self.bg = map(Image.open, os.path.join(root, tile_def_in["bg"]))
-            else:
-                self.bg = [Image.open(os.path.join(root, tile_def_in["bg"]))]
-
         if "autotile" in tile_def_in and tile_def_in["autotile"]:
-            if "autotile_fg" not in tile_def_in and "autotile_bg" not in tile_def_in:
-                print("Error reading {0}: need at least one of autotile_fg or autotile_bg".format(filepath))
-                os.abort()
             self.multitile = True
             self.rotates = True
-            if "autotile_fg" in tile_def_in:
-                self.autotile_fg = Image.open(os.path.join(root, tile_def_in["autotile_fg"]))
-            if "autotile_bg" in tile_def_in:
-                self.autotile_bg = Image.open(os.path.join(root, tile_def_in["autotile_bg"]))
+            if "fg" in tile_def_in:
+                self.autotile_fg = Image.open(os.path.join(root, tile_def_in["fg"]))
+            if "bg" in tile_def_in:
+                self.autotile_bg = Image.open(os.path.join(root, tile_def_in["bg"]))
         else:
             if "rotates" in tile_def_in:
                 self.rotates = tile_def_in["rotates"]
+
+            if "fg" in tile_def_in:
+                if isinstance(tile_def_in["fg"], list):
+                    self.fg = map(Image.open, os.path.join(root, tile_def_in["fg"]))
+                else:
+                    self.fg = [Image.open(os.path.join(root, tile_def_in["fg"]))]
+
+            if "bg" in tile_def_in:
+                if isinstance(tile_def_in["bg"], list):
+                    self.bg = map(Image.open, os.path.join(root, tile_def_in["bg"]))
+                else:
+                    self.bg = [Image.open(os.path.join(root, tile_def_in["bg"]))]
+
 
 
 def main():
@@ -199,30 +197,7 @@ def main():
                 else:
                     tile["id"] = tile_def.id
 
-                if tile_def.fg:
-                    if len(tile_def.fg) == 1:
-                        tile["fg"] = tile_index
-                        sprites.append(tile_def.fg[0])
-                        tile_index += 1
-                    else:
-                        tile["fg"] = []
-                        for sprite in tile_def.fg:
-                            tile["fg"].append(tile_index)
-                            sprites.append(sprite)
-                            tile_index += 1
-
-                if tile_def.bg:
-                    if len(tile_def.bg) == 1:
-                        tile["bg"] = tile_index
-                        sprites.append(tile_def.bg[0])
-                        tile_index += 1
-                    else:
-                        tile["bg"] = []
-                        for sprite in tile_def.bg:
-                            tile["bg"].append(tile_index)
-                            sprites.append(sprite)
-                            tile_index += 1
-
+                # Autotile defintion
                 if tile_def.autotile_fg is not None or tile_def.autotile_bg is not None:
                     tile["multitile"] = True
                     tile["rotates"] = True
@@ -234,10 +209,12 @@ def main():
                     unconnected["id"] = "unconnected"
                     if fg_tiles:
                         unconnected["fg"] = tile_index
+                        tile["fg"] = tile_index
                         sprites.append(fg_tiles[15])
                         tile_index += 1
                     if bg_tiles:
                         unconnected["bg"] = tile_index
+                        tile["bg"] = tile_index
                         sprites.append(bg_tiles[15])
                         tile_index += 1
 
@@ -298,6 +275,29 @@ def main():
 
                     tile["additional_tiles"] = [unconnected, center, edge, corner, t_connection, end_piece]
                 else:
+                    if tile_def.fg:
+                        if len(tile_def.fg) == 1:
+                            tile["fg"] = tile_index
+                            sprites.append(tile_def.fg[0])
+                            tile_index += 1
+                        else:
+                            tile["fg"] = []
+                            for sprite in tile_def.fg:
+                                tile["fg"].append(tile_index)
+                                sprites.append(sprite)
+                                tile_index += 1
+
+                    if tile_def.bg:
+                        if len(tile_def.bg) == 1:
+                            tile["bg"] = tile_index
+                            sprites.append(tile_def.bg[0])
+                            tile_index += 1
+                        else:
+                            tile["bg"] = []
+                            for sprite in tile_def.bg:
+                                tile["bg"].append(tile_index)
+                                sprites.append(sprite)
+                                tile_index += 1
                     tile["rotates"] = False
 
                 tiles.append(tile)

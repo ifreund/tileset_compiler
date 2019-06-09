@@ -17,9 +17,8 @@
     },
     {
         "id": ["t_wall", "t_wall_w"],
-        "fg": "t_wall/t_wall_horizontal.png",
-        "autotile" : true,
-        "autotile_fg" : "t_wall/t_wall_basic_autotile.png"
+        "fg": "t_wall/t_wall_basic_autotile.png",
+        "autotile" : true
     },
     {
         "id": "t_window_no_curtains",
