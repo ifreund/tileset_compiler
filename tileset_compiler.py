@@ -16,71 +16,10 @@ def autotile_to_array(img, tile_width, tile_height):
     out = []
     if img is None:
         return out
-    for x in range(0, img.width, tile_width):
-        for y in range(0, img.height, tile_height):
-            out.append(img.crop((x, y, x + tile_width, y + tile_height)))
+    for row in range(0, img.height, tile_height):
+        for column in range(0, img.width, tile_width):
+            out.append(img.crop((row, column, row + tile_width, column + tile_height)))
     return out
-
-
-def autotile_to_tile_config(sprites, fg, bg, tile_width, tile_height):
-    fg_tiles = autotile_to_array(fg, tile_width, tile_height)
-    bg_tiles = autotile_to_array(bg, tile_width, tile_height)
-
-    unconnected = {}
-    unconnected["id"] = "unconnected"
-    if fg:
-        unconnected["fg"] = len(sprites)
-        sprites.append(fg_tiles[3])
-    if bg:
-        unconnected["bg"] = len(sprites)
-        sprites.append(bg_tiles[3])
-
-    center = {}
-    center["id"] = "center"
-    if fg:
-        center["fg"] = len(sprites)
-        sprites.append(fg_tiles[5])
-    if bg:
-        center["bg"] = len(sprites)
-        sprites.append(bg_tiles[5])
-
-    edge = {}
-    edge["id"] = "edge"
-    if fg:
-        edge["fg"] = [len(sprites), len(sprites) + 1]
-        sprites.extend([fg_tiles[7], fg_tiles[11]])
-    if bg:
-        edge["bg"] = [len(sprites), len(sprites) + 1]
-        sprites.extend([bg_tiles[7], bg_tiles[11]])
-
-    corner = {}
-    corner["id"] = "corner"
-    if fg:
-        corner["fg"] = [len(sprites), len(sprites) + 1, len(sprites) + 2, len(sprites) + 3]
-        sprites.extend([fg_tiles[0], fg_tiles[2], fg_tiles[8], fg_tiles[10]])
-    if bg:
-        corner["bg"] = [len(sprites), len(sprites) + 1, len(sprites) + 2, len(sprites) + 3]
-        sprites.extend([bg_tiles[0], bg_tiles[2], bg_tiles[8], bg_tiles[10]])
-
-    t_connection = {}
-    t_connection["id"] = "t_connection"
-    if fg:
-        t_connection["fg"] = [len(sprites), len(sprites) + 1, len(sprites) + 2, len(sprites) + 3]
-        sprites.extend([fg_tiles[1], fg_tiles[4], fg_tiles[6], fg_tiles[9]])
-    if bg:
-        t_connection["bg"] = [len(sprites), len(sprites) + 1, len(sprites) + 2, len(sprites) + 3]
-        sprites.extend([bg_tiles[1], bg_tiles[4], bg_tiles[6], bg_tiles[9]])
-
-    end_piece = {}
-    end_piece["id"] = "end_piece"
-    if fg:
-        end_piece["fg"] = [len(sprites), len(sprites) + 1, len(sprites) + 2, len(sprites) + 3]
-        sprites.extend([fg_tiles[12], fg_tiles[13], fg_tiles[14], fg_tiles[15]])
-    if bg:
-        end_piece["bg"] = [len(sprites), len(sprites) + 1, len(sprites) + 2, len(sprites) + 3]
-        sprites.extend([bg_tiles[12], bg_tiles[13], bg_tiles[14], bg_tiles[15]])
-
-    return [unconnected, center, edge, corner, t_connection, end_piece]
 
 
 # Loads and stores the tile definiton from path
@@ -206,7 +145,7 @@ def main():
                     out["tile_info"][0]["pixelscale"] = tile_info["pixelscale"]
 
         out["tiles-new"] = []
-
+        tile_index = 0
         for directory in dirs:
             print("Processing {0}".format(os.path.join(root, directory)))
             current_file = {"file": directory + ".png"}
@@ -238,33 +177,111 @@ def main():
             sprites = []
             for tile_def in tile_defs:
                 tile = {}
-                tile["id"] = tile_def.id
+                if len(tile_def.id) == 1:
+                    tile["id"] = tile_def.id[0]
+                else:
+                    tile["id"] = tile_def.id
 
                 if tile_def.fg:
                     if len(tile_def.fg) == 1:
-                        tile["fg"] = len(sprites)
+                        tile["fg"] = tile_index
                         sprites.append(tile_def.fg[0])
+                        tile_index += 1
                     else:
                         tile["fg"] = []
                         for sprite in tile_def.fg:
-                            tile["fg"].append(len(sprites))
+                            tile["fg"].append(tile_index)
                             sprites.append(sprite)
+                            tile_index += 1
 
                 if tile_def.bg:
                     if len(tile_def.bg) == 1:
-                        tile["bg"] = len(sprites)
+                        tile["bg"] = tile_index
                         sprites.append(tile_def.bg[0])
+                        tile_index += 1
                     else:
                         tile["bg"] = []
                         for sprite in tile_def.bg:
-                            tile["bg"].append(len(sprites))
+                            tile["bg"].append(tile_index)
                             sprites.append(sprite)
+                            tile_index += 1
 
                 if tile_def.autotile_fg is not None or tile_def.autotile_bg is not None:
-                    tile["multitile"] = True,
-                    tile["rotates"] = True,
-                    tile["addtional_tiles"] = autotile_to_tile_config(sprites, tile_def.autotile_fg,
-                                                                      tile_def.autotile_bg, tile_width, tile_height)
+                    tile["multitile"] = True
+                    tile["rotates"] = True
+
+                    fg_tiles = autotile_to_array(tile_def.autotile_fg, tile_width, tile_height)
+                    bg_tiles = autotile_to_array(tile_def.autotile_bg, tile_width, tile_height)
+
+                    unconnected = {}
+                    unconnected["id"] = "unconnected"
+                    if fg_tiles:
+                        unconnected["fg"] = tile_index
+                        sprites.append(fg_tiles[3])
+                        tile_index += 1
+                    if bg_tiles:
+                        unconnected["bg"] = tile_index
+                        sprites.append(bg_tiles[3])
+                        tile_index += 1
+
+                    center = {}
+                    center["id"] = "center"
+                    if fg_tiles:
+                        center["fg"] = tile_index
+                        sprites.append(fg_tiles[5])
+                        tile_index += 1
+                    if bg_tiles:
+                        center["bg"] = tile_index
+                        sprites.append(bg_tiles[5])
+                        tile_index += 1
+
+                    edge = {}
+                    edge["id"] = "edge"
+                    if fg_tiles:
+                        edge["fg"] = [tile_index, tile_index + 1]
+                        sprites.extend([fg_tiles[7], fg_tiles[11]])
+                        tile_index += 2
+                    if bg_tiles:
+                        edge["bg"] = [tile_index, tile_index + 1]
+                        sprites.extend([bg_tiles[7], bg_tiles[11]])
+                        tile_index += 2
+
+                    corner = {}
+                    corner["id"] = "corner"
+                    if fg_tiles:
+                        corner["fg"] = [tile_index, tile_index + 1, tile_index + 2, tile_index + 3]
+                        sprites.extend([fg_tiles[0], fg_tiles[8], fg_tiles[10], fg_tiles[2]])
+                        tile_index += 4
+                    if bg_tiles:
+                        corner["bg"] = [tile_index, tile_index + 1, tile_index + 2, tile_index + 3]
+                        sprites.extend([bg_tiles[0], bg_tiles[8], bg_tiles[10], bg_tiles[2]])
+                        tile_index += 4
+
+                    t_connection = {}
+                    t_connection["id"] = "t_connection"
+                    if fg_tiles:
+                        t_connection["fg"] = [tile_index, tile_index + 1, tile_index + 2, tile_index + 3]
+                        sprites.extend([fg_tiles[1], fg_tiles[4], fg_tiles[9], fg_tiles[6]])
+                        tile_index += 4
+                    if bg_tiles:
+                        t_connection["bg"] = [tile_index, tile_index + 1, tile_index + 2, tile_index + 3]
+                        sprites.extend([bg_tiles[1], bg_tiles[4], bg_tiles[9], bg_tiles[6]])
+                        tile_index += 4
+
+                    end_piece = {}
+                    end_piece["id"] = "end_piece"
+                    if fg_tiles:
+                        end_piece["fg"] = [tile_index, tile_index + 1, tile_index + 2, tile_index + 3]
+                        sprites.extend([fg_tiles[14], fg_tiles[13], fg_tiles[12], fg_tiles[15]])
+                        tile_index += 4
+                    if bg_tiles:
+                        end_piece["bg"] = [tile_index, tile_index + 1, tile_index + 2, tile_index + 3]
+                        sprites.extend([bg_tiles[14], bg_tiles[13], bg_tiles[12], bg_tiles[15]])
+                        tile_index += 4
+
+                    tile["additional_tiles"] = [unconnected, center, edge, corner, t_connection, end_piece]
+                else:
+                    tile["rotates"] = False
 
                 tiles.append(tile)
 
