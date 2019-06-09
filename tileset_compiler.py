@@ -217,11 +217,11 @@ def main():
                     unconnected["id"] = "unconnected"
                     if fg_tiles:
                         unconnected["fg"] = tile_index
-                        sprites.append(fg_tiles[3])
+                        sprites.append(fg_tiles[15])
                         tile_index += 1
                     if bg_tiles:
                         unconnected["bg"] = tile_index
-                        sprites.append(bg_tiles[3])
+                        sprites.append(bg_tiles[15])
                         tile_index += 1
 
                     center = {}
@@ -239,11 +239,11 @@ def main():
                     edge["id"] = "edge"
                     if fg_tiles:
                         edge["fg"] = [tile_index, tile_index + 1]
-                        sprites.extend([fg_tiles[7], fg_tiles[11]])
+                        sprites.extend([fg_tiles[7], fg_tiles[13]])
                         tile_index += 2
                     if bg_tiles:
                         edge["bg"] = [tile_index, tile_index + 1]
-                        sprites.extend([bg_tiles[7], bg_tiles[11]])
+                        sprites.extend([bg_tiles[7], bg_tiles[13]])
                         tile_index += 2
 
                     corner = {}
@@ -272,11 +272,11 @@ def main():
                     end_piece["id"] = "end_piece"
                     if fg_tiles:
                         end_piece["fg"] = [tile_index, tile_index + 1, tile_index + 2, tile_index + 3]
-                        sprites.extend([fg_tiles[14], fg_tiles[13], fg_tiles[12], fg_tiles[15]])
+                        sprites.extend([fg_tiles[3], fg_tiles[12], fg_tiles[11], fg_tiles[14]])
                         tile_index += 4
                     if bg_tiles:
                         end_piece["bg"] = [tile_index, tile_index + 1, tile_index + 2, tile_index + 3]
-                        sprites.extend([bg_tiles[14], bg_tiles[13], bg_tiles[12], bg_tiles[15]])
+                        sprites.extend([bg_tiles[3], bg_tiles[12], bg_tiles[11], bg_tiles[14]])
                         tile_index += 4
 
                     tile["additional_tiles"] = [unconnected, center, edge, corner, t_connection, end_piece]
