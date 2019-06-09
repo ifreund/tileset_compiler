@@ -1,0 +1,14 @@
+[
+    {
+        "id": "welder",
+        "fg": "welder.png"
+    },
+    {
+        "id": "welder_crude",
+        "fg": "welder_crude.png"
+    },
+    {
+        "id": "cable",
+        "fg": "cable.png"
+    }
+]

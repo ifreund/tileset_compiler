@@ -1,0 +1,36 @@
+[
+    {
+        "id": "t_console",
+        "fg": "t_console.png"
+    },
+    {
+        "id": "t_brick_wall",
+        "fg": "t_brick_wall/t_brick_wall.png"
+    },
+    {
+        "id": "t_door_c",
+        "fg": "t_door_c/t_door_c_center.png"
+    },
+    {
+        "id": "t_stairs_down",
+        "fg": "t_stairs_down.png"
+    },
+    {
+        "id": ["t_wall", "t_wall_w"],
+        "fg": "t_wall/t_wall_horizontal.png",
+        "autotile" : true,
+        "autotile_fg" : "t_wall/t_wall_basic_autotile.png"
+    },
+    {
+        "id": "t_window_no_curtains",
+        "fg": "t_window_no_curtains.png"
+    },
+    {
+        "id": "t_window_open",
+        "fg": "t_window_open.png"
+    },
+    {
+        "id": "t_window",
+        "fg": "t_window.png"
+    }
+]
