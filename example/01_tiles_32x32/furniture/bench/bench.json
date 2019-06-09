@@ -1,6 +1,5 @@
 {
     "id" : "f_bench",
-    "fg" : "f_bench_center.png",
-    "autotile" : true,
-    "autotile_fg" : "f_bench_autotile.png"
+    "fg" : "f_bench_autotile.png",
+    "autotile" : true
 }
