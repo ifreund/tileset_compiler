@@ -24,12 +24,9 @@ def autotile_to_array(img, tile_width, tile_height):
 
 # Loads and stores the tile definiton from path
 class Tile_Def:
-    id = []
-    fg = []
-    bg = []
-
-    # TODO: implement alternates (and probably make fg/bg not lists
-    alternates = []
+    id = None
+    fg = None
+    bg = None
 
     autotile_fg = None
     autotile_bg = None
@@ -49,10 +46,7 @@ class Tile_Def:
             print("Error reading {0}: need at least one of \"fg\" or \"bg\"".format(filepath))
             os.abort()
 
-        if isinstance(tile_def_in["id"], list):
-            self.id = tile_def_in["id"]
-        else:
-            self.id = [tile_def_in["id"]]
+        self.id = tile_def_in["id"]
 
         if "autotile" in tile_def_in and tile_def_in["autotile"]:
             self.multitile = True
@@ -67,16 +61,19 @@ class Tile_Def:
 
             if "fg" in tile_def_in:
                 if isinstance(tile_def_in["fg"], list):
-                    self.fg = map(Image.open, os.path.join(root, tile_def_in["fg"]))
+                    self.fg = []
+                    for variant in tile_def_in["fg"]:
+                        self.fg.append((Image.open(os.path.join(root, variant[0])), variant[1]))
                 else:
-                    self.fg = [Image.open(os.path.join(root, tile_def_in["fg"]))]
+                    self.fg = Image.open(os.path.join(root, tile_def_in["fg"]))
 
             if "bg" in tile_def_in:
                 if isinstance(tile_def_in["bg"], list):
-                    self.bg = map(Image.open, os.path.join(root, tile_def_in["bg"]))
+                    self.bg = []
+                    for variant in tile_def_in["bg"]:
+                        self.bg.append((Image.open(os.path.join(root, variant[0])), variant[1]))
                 else:
-                    self.bg = [Image.open(os.path.join(root, tile_def_in["bg"]))]
-
+                    self.bg = Image.open(os.path.join(root, tile_def_in["bg"]))
 
 
 def main():
@@ -276,28 +273,29 @@ def main():
                     tile["additional_tiles"] = [unconnected, center, edge, corner, t_connection, end_piece]
                 else:
                     if tile_def.fg:
-                        if len(tile_def.fg) == 1:
-                            tile["fg"] = tile_index
-                            sprites.append(tile_def.fg[0])
-                            tile_index += 1
-                        else:
+                        if isinstance(tile_def.fg, list):
                             tile["fg"] = []
-                            for sprite in tile_def.fg:
-                                tile["fg"].append(tile_index)
+                            for sprite, weight in tile_def.fg:
+                                tile["fg"].append({"sprite": tile_index, "weight": weight})
                                 sprites.append(sprite)
                                 tile_index += 1
+                        else:
+                            tile["fg"] = tile_index
+                            sprites.append(tile_def.fg)
+                            tile_index += 1
 
                     if tile_def.bg:
-                        if len(tile_def.bg) == 1:
-                            tile["bg"] = tile_index
-                            sprites.append(tile_def.bg[0])
-                            tile_index += 1
-                        else:
+                        if isinstance(tile_def.bg, list):
                             tile["bg"] = []
-                            for sprite in tile_def.bg:
-                                tile["bg"].append(tile_index)
+                            for sprite, weight in tile_def.bg:
+                                tile["bg"].append({"sprite": tile_index, "weight": weight})
                                 sprites.append(sprite)
                                 tile_index += 1
+                        else:
+                            tile["bg"] = tile_index
+                            sprites.append(tile_def.bg)
+                            tile_index += 1
+
                     tile["rotates"] = False
 
                 tiles.append(tile)

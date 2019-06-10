@@ -2,5 +2,13 @@
     {
         "id": "mon_zombie_shady",
         "fg": "mon_zombie_shady.png"
+    },
+    {
+        "id": "mon_zombie",
+        "fg": [
+            [ "mon_zombie/mon_zombie_1.png", 5 ],
+            [ "mon_zombie/mon_zombie_2.png", 1 ],
+            [ "mon_zombie/mon_zombie_3.png", 1 ]
+        ]
     }
 ]
